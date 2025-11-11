@@ -92,3 +92,22 @@ export const processingData = sqliteTable('processing_data', {
 		.$defaultFn(() => new Date())
 		.notNull()
 });
+
+// Store parsed harvest/farm data from transaction notes
+export const harvestData = sqliteTable('harvest_data', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	transactionId: text('transaction_id')
+		.notNull()
+		.references(() => algorandTransaction.id),
+	txId: text('tx_id').notNull(), // Algorand transaction ID
+	farmId: text('farm_id'),
+	farmAnagraphic: text('farm_anagraphic'),
+	farmLocation: text('farm_location'),
+	fieldsData: text('fields_data'), // JSON string with array of field objects
+	rawData: text('raw_data'), // Store the full parsed note for reference
+	createdAt: integer('created_at', { mode: 'timestamp' })
+		.$defaultFn(() => new Date())
+		.notNull()
+});

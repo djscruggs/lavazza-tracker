@@ -1,10 +1,11 @@
 import { db } from './db';
-import { algorandTransaction, roastingData, syncStatus } from './db/schema';
+import { algorandTransaction, roastingData, harvestData, syncStatus } from './db/schema';
 import { eq } from 'drizzle-orm';
 import {
 	LAVAZZA_ADDRESSES,
 	fetchNewTransactions,
 	parseRoastingData,
+	parseHarvestData,
 	type AlgorandTransaction
 } from './algorand';
 
@@ -97,6 +98,12 @@ async function syncAddressTransactions(address: string): Promise<{
 					const parsed = parseRoastingData(tx.noteDecoded);
 					if (parsed) {
 						await saveRoastingData(savedTx.id, tx.id, tx.noteDecoded, parsed);
+					}
+
+					// Also try parsing as harvest data
+					const harvestParsed = parseHarvestData(tx.noteDecoded);
+					if (harvestParsed) {
+						await saveHarvestData(savedTx.id, tx.id, tx.noteDecoded, harvestParsed);
 					}
 				}
 
@@ -204,6 +211,31 @@ async function saveRoastingData(
 			zone2HarvestBegin: parsed.zone2HarvestBegin,
 			zone2HarvestEnd: parsed.zone2HarvestEnd,
 			childTx: parsed.childTx,
+			rawData: rawNote
+		})
+		.onConflictDoNothing();
+}
+
+/**
+ * Saves parsed harvest data to the database
+ */
+async function saveHarvestData(
+	transactionId: string,
+	txId: string,
+	rawNote: string,
+	parsed: ReturnType<typeof parseHarvestData>
+): Promise<void> {
+	if (!parsed) return;
+
+	await db
+		.insert(harvestData)
+		.values({
+			transactionId: transactionId,
+			txId: txId,
+			farmId: parsed.farmId,
+			farmAnagraphic: parsed.farmAnagraphic,
+			farmLocation: parsed.farmLocation,
+			fieldsData: JSON.stringify(parsed.fields),
 			rawData: rawNote
 		})
 		.onConflictDoNothing();
