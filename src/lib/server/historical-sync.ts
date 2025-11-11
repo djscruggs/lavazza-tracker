@@ -1,8 +1,8 @@
 import algosdk from 'algosdk';
 import { db } from './db';
-import { algorandTransaction, roastingData, processingData, syncStatus } from './db/schema';
+import { algorandTransaction, roastingData, processingData, harvestData, syncStatus } from './db/schema';
 import { eq } from 'drizzle-orm';
-import { LAVAZZA_ADDRESSES, parseRoastingData, parseProcessingData } from './algorand';
+import { LAVAZZA_ADDRESSES, parseRoastingData, parseProcessingData, parseHarvestData } from './algorand';
 
 // AlgoNode free indexer endpoints
 const INDEXER_SERVER = 'https://mainnet-idx.algonode.cloud';
@@ -154,6 +154,12 @@ async function syncHistoricalTransactionsForAddress(
 					if (processingParsed) {
 						await saveProcessingData(savedTx.id, tx.id, noteDecoded, processingParsed);
 					}
+
+					// Also try parsing as harvest data
+					const harvestParsed = parseHarvestData(noteDecoded);
+					if (harvestParsed) {
+						await saveHarvestData(savedTx.id, tx.id, noteDecoded, harvestParsed);
+					}
 				}
 
 				totalTransactions++;
@@ -296,6 +302,31 @@ async function saveProcessingData(
 			sortExit: parsed.sortExit,
 			harvestBegin: parsed.harvestBegin,
 			harvestEnd: parsed.harvestEnd,
+			rawData: rawNote
+		})
+		.onConflictDoNothing();
+}
+
+/**
+ * Saves parsed harvest data to the database
+ */
+async function saveHarvestData(
+	transactionId: string,
+	txId: string,
+	rawNote: string,
+	parsed: ReturnType<typeof parseHarvestData>
+): Promise<void> {
+	if (!parsed) return;
+
+	await db
+		.insert(harvestData)
+		.values({
+			transactionId: transactionId,
+			txId: txId,
+			farmId: parsed.farmId,
+			farmAnagraphic: parsed.farmAnagraphic,
+			farmLocation: parsed.farmLocation,
+			fieldsData: JSON.stringify(parsed.fields),
 			rawData: rawNote
 		})
 		.onConflictDoNothing();

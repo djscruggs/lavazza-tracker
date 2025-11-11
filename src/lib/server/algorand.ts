@@ -112,6 +112,24 @@ export interface ProcessingData {
 	harvestEnd?: string;
 }
 
+export interface HarvestFieldData {
+	coffeeVariety?: string;
+	fieldId?: string;
+	fieldLocation?: string;
+	coffeeLots?: number;
+	coffeeLotIds?: string;
+	typeOfHarvesting?: string;
+	harvestDateBegin?: string;
+	harvestDateEnd?: string;
+}
+
+export interface HarvestData {
+	farmId?: string;
+	farmAnagraphic?: string;
+	farmLocation?: string;
+	fields: HarvestFieldData[];
+}
+
 /**
  * Parses roasting data from transaction note text
  * Handles multiple transaction types: ROASTING, PROCESSING, etc.
@@ -245,6 +263,70 @@ export function parseProcessingData(noteText: string): ProcessingData | null {
 		return Object.keys(data).length > 0 ? data : null;
 	} catch (error) {
 		console.error('Error parsing processing data:', error);
+		return null;
+	}
+}
+
+/**
+ * Parses harvest/farm data from transaction note text
+ * @param noteText - Decoded transaction note as UTF-8 string
+ */
+export function parseHarvestData(noteText: string): HarvestData | null {
+	if (!noteText) return null;
+
+	try {
+		// Check if this looks like harvest data (has "Farm ID:" or "HARVEST")
+		if (!noteText.includes('Farm ID:') && !noteText.includes('HARVEST')) {
+			return null;
+		}
+
+		const data: HarvestData = {
+			fields: []
+		};
+
+		// Extract farm-level data
+		const farmIdMatch = noteText.match(/Farm ID:\s*(\d+)/i);
+		if (farmIdMatch) data.farmId = farmIdMatch[1].trim();
+
+		const farmAnagraphicMatch = noteText.match(/Farm Anagraphic:\s*(\d+)/i);
+		if (farmAnagraphicMatch) data.farmAnagraphic = farmAnagraphicMatch[1].trim();
+
+		const farmLocationMatch = noteText.match(/Farm Location:\s*([^\n]+?)(?:\s+HARVEST|Coffee Variety:|$)/i);
+		if (farmLocationMatch) data.farmLocation = farmLocationMatch[1].trim();
+
+		// Parse multiple field entries
+		// Split by "Coffee Variety:" as it marks the start of each field record
+		const fieldMatches = noteText.matchAll(
+			/Coffee Variety:\s*([^\n]+?)(?:\s+Field ID:\s*(\d+))?(?:\s+Field location \(lat\/lon\):\s*([-\d.,\s]+))?(?:\s+No\. of coffee lots:\s*(\d+))?(?:\s+Coffee Lot IDs:\s*([^\n]+?))?(?:\s+Type of Harvesting:\s*([^\n]+?))?(?:\s+Harvest date begin:\s*([^\n]+?))?(?:\s+Harvest date end:\s*([^\n]+?))?(?=Coffee Variety:|$)/gi
+		);
+
+		for (const match of fieldMatches) {
+			const field: HarvestFieldData = {
+				coffeeVariety: match[1]?.trim(),
+				fieldId: match[2]?.trim(),
+				fieldLocation: match[3]?.trim(),
+				coffeeLots: match[4] ? parseInt(match[4].trim()) : undefined,
+				coffeeLotIds: match[5]?.trim(),
+				typeOfHarvesting: match[6]?.trim(),
+				harvestDateBegin: match[7]?.trim(),
+				harvestDateEnd: match[8]?.trim()
+			};
+
+			// Only add field if it has some data
+			if (field.coffeeVariety || field.fieldId) {
+				data.fields.push(field);
+			}
+		}
+
+		// Only return data if we extracted farm info or at least one field
+		if (data.farmId || data.fields.length > 0) {
+			console.log(`[PARSE] Extracted harvest data with ${data.fields.length} fields`);
+			return data;
+		}
+
+		return null;
+	} catch (error) {
+		console.error('Error parsing harvest data:', error);
 		return null;
 	}
 }
