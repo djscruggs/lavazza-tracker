@@ -30,6 +30,9 @@ export const load: PageServerLoad = async () => {
 				zone2HarvestEnd: roastingData.zone2HarvestEnd,
 				childTx: roastingData.childTx,
 				// Processing data fields
+				receptionIds: processingData.receptionIds,
+				postHullIds: processingData.postHullIds,
+				sizeOfBeans: processingData.sizeOfBeans,
 				qtyGreenCoffee: processingData.qtyGreenCoffee,
 				sortEntry: processingData.sortEntry,
 				sortExit: processingData.sortExit,

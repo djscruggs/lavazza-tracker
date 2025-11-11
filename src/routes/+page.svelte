@@ -3,6 +3,18 @@
 
 	let { data }: { data: PageData } = $props();
 
+	// Track which rows are expanded
+	let expandedRows = $state(new Set<string>());
+
+	function toggleRow(txId: string) {
+		if (expandedRows.has(txId)) {
+			expandedRows.delete(txId);
+		} else {
+			expandedRows.add(txId);
+		}
+		expandedRows = new Set(expandedRows); // Trigger reactivity
+	}
+
 	function formatTime(timestamp: Date | null) {
 		if (!timestamp) return 'N/A';
 		return new Date(timestamp).toLocaleTimeString();
@@ -85,6 +97,20 @@
 		return new Date(timestamp).toLocaleDateString();
 	}
 
+	// Check if transaction has detailed data worth showing in expanded view
+	function hasDetailedData(tx: (typeof data.transactions)[0]) {
+		return !!(
+			tx.receptionIds ||
+			tx.postHullIds ||
+			tx.sizeOfBeans ||
+			tx.qtyGreenCoffee ||
+			tx.sortEntry ||
+			tx.sortExit ||
+			tx.processingHarvestBegin ||
+			tx.processingHarvestEnd
+		);
+	}
+
 	// Group transactions by date
 	type GroupedTransactions = {
 		date: string;
@@ -112,22 +138,37 @@
 <div class="container mx-auto px-4 py-8">
 	<div class="mb-8">
 		<h1 class="mb-2 text-3xl font-bold">Lavazza Coffee Transactions</h1>
-		<p class="text-gray-600">Tracking roasting activity on the Algorand blockchain</p>
+		<p class="text-gray-600">
+			Tracking roasting and processing activity on the Algorand blockchain
+		</p>
 	</div>
 
 	<!-- Legend -->
 	<div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
 		<h2 class="mb-2 text-sm font-semibold text-blue-900">Legend</h2>
-		<div class="flex items-center gap-2 text-sm text-blue-800">
-			<span
-				class="inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
-			>
-				Child
-			</span>
-			<span>
-				Indicates this transaction references a child transaction on the blockchain. Click the tag
-				to view the child transaction in the explorer.
-			</span>
+		<div class="space-y-2">
+			<div class="flex items-center gap-2 text-sm text-blue-800">
+				<span
+					class="inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
+				>
+					Child
+				</span>
+				<span>
+					Indicates this transaction references a child transaction on the blockchain. Click the
+					tag to view the child transaction in the explorer.
+				</span>
+			</div>
+			<div class="flex items-center gap-2 text-sm text-blue-800">
+				<span
+					class="inline-flex items-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+				>
+					Processing
+				</span>
+				<span>
+					Indicates this transaction contains processing data (Reception IDs, Hull IDs, etc.).
+					Click the row to expand and view detailed processing information.
+				</span>
+			</div>
 		</div>
 	</div>
 
@@ -206,9 +247,21 @@
 							</tr>
 							<!-- Transaction rows for this date -->
 							{#each group.transactions as tx}
-								<tr class="hover:bg-gray-50">
+								<!-- Main row (clickable to expand) -->
+								<tr
+									class="hover:bg-gray-50 cursor-pointer"
+									onclick={() => toggleRow(tx.txId)}
+									title={hasDetailedData(tx) ? 'Click to view detailed processing data' : ''}
+								>
 									<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-										{formatTime(tx.timestamp)}
+										<div class="flex items-center gap-2">
+											{#if hasDetailedData(tx)}
+												<span class="text-gray-400">
+													{expandedRows.has(tx.txId) ? '▼' : '▶'}
+												</span>
+											{/if}
+											{formatTime(tx.timestamp)}
+										</div>
 									</td>
 									<td class="px-6 py-4 text-sm whitespace-nowrap">
 										<div class="flex items-center gap-2">
@@ -217,6 +270,7 @@
 												target="_blank"
 												rel="noopener noreferrer"
 												class="font-mono text-blue-600 hover:text-blue-800"
+												onclick={(e) => e.stopPropagation()}
 											>
 												{truncateTxId(tx.txId)}
 											</a>
@@ -227,9 +281,18 @@
 													rel="noopener noreferrer"
 													class="inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 hover:bg-green-200 cursor-pointer"
 													title="Click to view child transaction: {tx.childTx}"
+													onclick={(e) => e.stopPropagation()}
 												>
 													Child
 												</a>
+											{/if}
+											{#if hasDetailedData(tx)}
+												<span
+													class="inline-flex items-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+													title="This transaction has processing data"
+												>
+													Processing
+												</span>
 											{/if}
 										</div>
 									</td>
@@ -274,6 +337,87 @@
 										</div>
 									</td>
 								</tr>
+
+								<!-- Expanded detail row -->
+								{#if expandedRows.has(tx.txId)}
+									<tr class="bg-blue-50">
+										<td colspan="9" class="px-6 py-4">
+											<div class="space-y-4">
+												<h3 class="font-semibold text-gray-900">Processing Details</h3>
+												<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+													<!-- Reception IDs -->
+													{#if tx.receptionIds}
+														<div>
+															<dt class="text-xs font-medium text-gray-500 uppercase">
+																Reception IDs
+															</dt>
+															<dd class="mt-1 text-sm text-gray-900 break-words">
+																{tx.receptionIds}
+															</dd>
+														</div>
+													{/if}
+
+													<!-- Post-hull IDs -->
+													{#if tx.postHullIds}
+														<div>
+															<dt class="text-xs font-medium text-gray-500 uppercase">
+																Post-hull IDs
+															</dt>
+															<dd class="mt-1 text-sm text-gray-900 break-words">
+																{tx.postHullIds}
+															</dd>
+														</div>
+													{/if}
+
+													<!-- Size of Beans -->
+													{#if tx.sizeOfBeans}
+														<div>
+															<dt class="text-xs font-medium text-gray-500 uppercase">
+																Size of Beans
+															</dt>
+															<dd class="mt-1 text-sm text-gray-900">{tx.sizeOfBeans}</dd>
+														</div>
+													{/if}
+
+													<!-- Qty Green Coffee -->
+													{#if tx.qtyGreenCoffee}
+														<div>
+															<dt class="text-xs font-medium text-gray-500 uppercase">
+																Qty Green Coffee
+															</dt>
+															<dd class="mt-1 text-sm text-gray-900">{tx.qtyGreenCoffee} Kg</dd>
+														</div>
+													{/if}
+
+													<!-- Sort Entry/Exit -->
+													{#if tx.sortEntry || tx.sortExit}
+														<div>
+															<dt class="text-xs font-medium text-gray-500 uppercase">
+																Sort Period
+															</dt>
+															<dd class="mt-1 text-sm text-gray-900">
+																{tx.sortEntry || 'N/A'} → {tx.sortExit || 'N/A'}
+															</dd>
+														</div>
+													{/if}
+
+													<!-- Processing Harvest Period -->
+													{#if tx.processingHarvestBegin || tx.processingHarvestEnd}
+														<div>
+															<dt class="text-xs font-medium text-gray-500 uppercase">
+																Harvest Period
+															</dt>
+															<dd class="mt-1 text-sm text-gray-900">
+																{tx.processingHarvestBegin || 'N/A'} → {tx.processingHarvestEnd ||
+																	'N/A'}
+															</dd>
+														</div>
+													{/if}
+												</div>
+											</div>
+										</td>
+									</tr>
+								{/if}
 							{/each}
 						{/each}
 					</tbody>

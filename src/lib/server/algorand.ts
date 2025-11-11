@@ -229,16 +229,24 @@ export function parseProcessingData(noteText: string): ProcessingData | null {
 	try {
 		const data: ProcessingData = {};
 
-		// Extract Reception IDs (comma-separated list before "Post-hull IDs:")
-		const receptionMatch = noteText.match(/Reception IDs:\s*([^]*?)(?=Post-hull IDs:|$)/i);
+		// Extract Reception IDs (comma-separated list before "Post-hull IDs:" or "Hull IDs:")
+		// Format 1: "Reception IDs: ..."
+		const receptionMatch = noteText.match(/Reception IDs:\s*([^]*?)(?=Post-hull IDs:|Hull IDs:|$)/i);
 		if (receptionMatch) {
 			// Clean up the IDs - remove extra whitespace and keep the comma-separated list
 			const ids = receptionMatch[1].trim().replace(/\s+/g, ' ');
 			data.receptionIds = ids;
+		} else {
+			// Format 2: Comma-separated list at the beginning before "Hull IDs:"
+			const unlabeledMatch = noteText.match(/^([\d,\s]+?)(?=\n.*?(?:Hull IDs:|Post-hull IDs:|Child_TX))/is);
+			if (unlabeledMatch) {
+				const ids = unlabeledMatch[1].trim().replace(/\s+/g, ' ');
+				data.receptionIds = ids;
+			}
 		}
 
-		// Extract Post-hull IDs
-		const postHullMatch = noteText.match(/Post-hull IDs:\s*([^]*?)(?=Size of beans:|$)/i);
+		// Extract Post-hull IDs (handles both "Post-hull IDs:" and "Hull IDs:")
+		const postHullMatch = noteText.match(/(?:Post-hull IDs:|Hull IDs:)\s*([^]*?)(?=Size of beans:|Child_TX|$)/i);
 		if (postHullMatch) {
 			const ids = postHullMatch[1].trim().replace(/\s+/g, ' ');
 			data.postHullIds = ids;
