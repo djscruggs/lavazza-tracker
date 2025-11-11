@@ -10,4 +10,4 @@
 # - DATABASE_URL: Your Turso/libSQL database URL (e.g., libsql://your-db.turso.io)
 # - DATABASE_AUTH_TOKEN: Your Turso authentication token (if using Turso)
 
-# Note: Redirects are configured in static/_redirects file (required by SvelteKit adapter-netlify)
+# Note: Redirects are configured in _redirects file (required by SvelteKit adapter-netlify)
