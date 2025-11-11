@@ -8,8 +8,14 @@ const INDEXER_TOKEN = '';
 // Initialize the indexer client
 const indexerClient = new algosdk.Indexer(INDEXER_TOKEN, INDEXER_SERVER, INDEXER_PORT);
 
-// Lavazza Algorand address
-export const LAVAZZA_ADDRESS = 'IHUIX3OSTQO7DQ77SOQ66IR6WVQ5PAFGTBF4TBEC36IUSLGU7O3KD6TJ4E';
+// Lavazza Algorand addresses to track
+export const LAVAZZA_ADDRESSES = [
+	'IHUIX3OSTQO7DQ77SOQ66IR6WVQ5PAFGTBF4TBEC36IUSLGU7O3KD6TJ4E',
+	'2YPWHEG662PVPM75TILSWNN5VLIJMIIMTBD5ARJXS2JUJ2X6RPG23R4QSU'
+];
+
+// Keep for backwards compatibility
+export const LAVAZZA_ADDRESS = LAVAZZA_ADDRESSES[0];
 
 export interface AlgorandTransaction {
 	id: string;
