@@ -115,6 +115,22 @@
 		<p class="text-gray-600">Tracking roasting activity on the Algorand blockchain</p>
 	</div>
 
+	<!-- Legend -->
+	<div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+		<h2 class="mb-2 text-sm font-semibold text-blue-900">Legend</h2>
+		<div class="flex items-center gap-2 text-sm text-blue-800">
+			<span
+				class="inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
+			>
+				Child
+			</span>
+			<span>
+				Indicates this transaction references a child transaction on the blockchain. Hover over the
+				tag to see the child transaction ID.
+			</span>
+		</div>
+	</div>
+
 	{#if data.transactions.length === 0}
 		<div class="rounded-lg border border-yellow-200 bg-yellow-50 p-6 text-center">
 			<p class="mb-2 font-medium text-yellow-800">No transactions found</p>
