@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX `processing_data_transaction_id_unique` ON `processing_data` (`transaction_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `roasting_data_transaction_id_unique` ON `roasting_data` (`transaction_id`);

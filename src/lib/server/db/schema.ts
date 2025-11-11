@@ -49,6 +49,7 @@ export const roastingData = sqliteTable('roasting_data', {
 		.$defaultFn(() => crypto.randomUUID()),
 	transactionId: text('transaction_id')
 		.notNull()
+		.unique()
 		.references(() => algorandTransaction.id),
 	txId: text('tx_id').notNull(), // Algorand transaction ID
 	parentCompanyId: text('parent_company_id'),
@@ -77,6 +78,7 @@ export const processingData = sqliteTable('processing_data', {
 		.$defaultFn(() => crypto.randomUUID()),
 	transactionId: text('transaction_id')
 		.notNull()
+		.unique()
 		.references(() => algorandTransaction.id),
 	txId: text('tx_id').notNull(), // Algorand transaction ID
 	receptionIds: text('reception_ids'), // Comma-separated list

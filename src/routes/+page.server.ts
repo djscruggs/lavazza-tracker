@@ -6,8 +6,9 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async () => {
 	try {
 		// Fetch transactions with their roasting data, ordered by timestamp descending (newest first)
+		// Use DISTINCT ON to ensure we only get one row per transaction, even if there are duplicate records
 		const transactions = await db
-			.select({
+			.selectDistinct({
 				id: algorandTransaction.id,
 				txId: algorandTransaction.txId,
 				round: algorandTransaction.round,
