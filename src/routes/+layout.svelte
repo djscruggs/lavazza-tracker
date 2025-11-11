@@ -56,7 +56,7 @@
 					<button
 						onclick={triggerSync}
 						disabled={syncing}
-						class="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+						class="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{syncing ? 'Syncing...' : 'Sync Now'}
 					</button>

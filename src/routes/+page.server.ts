@@ -46,8 +46,11 @@ export const load: PageServerLoad = async () => {
 		};
 	} catch (error) {
 		console.error('Error loading transactions:', error);
-		return {
-			transactions: []
-		};
+		console.error('Error details:', {
+			name: error instanceof Error ? error.name : 'Unknown',
+			message: error instanceof Error ? error.message : String(error),
+			stack: error instanceof Error ? error.stack : undefined
+		});
+		throw error; // Re-throw to see the full error in logs
 	}
 };
