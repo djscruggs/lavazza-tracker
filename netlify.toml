@@ -1,0 +1,18 @@
+[build]
+  # Run database migrations before building
+  command = "npm run db:push && npm run build"
+  publish = "build"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Required environment variables (set in Netlify dashboard):
+# - DATABASE_URL: Your Turso/libSQL database URL (e.g., libsql://your-db.turso.io)
+# - DATABASE_AUTH_TOKEN: Your Turso authentication token (if using Turso)
+
+# Redirect all traffic to HTTPS
+[[redirects]]
+  from = "http://*"
+  to = "https://:splat"
+  status = 301
+  force = true

@@ -1,8 +1,8 @@
 import algosdk from 'algosdk';
 import { db } from './db';
-import { algorandTransaction, roastingData, syncStatus } from './db/schema';
+import { algorandTransaction, roastingData, processingData, syncStatus } from './db/schema';
 import { eq } from 'drizzle-orm';
-import { LAVAZZA_ADDRESS, parseRoastingData } from './algorand';
+import { LAVAZZA_ADDRESS, parseRoastingData, parseProcessingData } from './algorand';
 
 // AlgoNode free indexer endpoints
 const INDEXER_SERVER = 'https://mainnet-idx.algonode.cloud';
@@ -89,6 +89,12 @@ export async function syncHistoricalTransactions(
 						const parsed = parseRoastingData(noteDecoded);
 						if (parsed) {
 							await saveRoastingData(savedTx.id, tx.id, noteDecoded, parsed);
+						}
+
+						// Also try parsing as processing data
+						const processingParsed = parseProcessingData(noteDecoded);
+						if (processingParsed) {
+							await saveProcessingData(savedTx.id, tx.id, noteDecoded, processingParsed);
 						}
 					}
 
@@ -211,6 +217,35 @@ async function saveRoastingData(
 			zone2HarvestBegin: parsed.zone2HarvestBegin,
 			zone2HarvestEnd: parsed.zone2HarvestEnd,
 			childTx: parsed.childTx,
+			rawData: rawNote
+		})
+		.onConflictDoNothing();
+}
+
+/**
+ * Saves parsed processing data to the database
+ */
+async function saveProcessingData(
+	transactionId: string,
+	txId: string,
+	rawNote: string,
+	parsed: ReturnType<typeof parseProcessingData>
+): Promise<void> {
+	if (!parsed) return;
+
+	await db
+		.insert(processingData)
+		.values({
+			transactionId: transactionId,
+			txId: txId,
+			receptionIds: parsed.receptionIds,
+			postHullIds: parsed.postHullIds,
+			sizeOfBeans: parsed.sizeOfBeans,
+			qtyGreenCoffee: parsed.qtyGreenCoffee,
+			sortEntry: parsed.sortEntry,
+			sortExit: parsed.sortExit,
+			harvestBegin: parsed.harvestBegin,
+			harvestEnd: parsed.harvestEnd,
 			rawData: rawNote
 		})
 		.onConflictDoNothing();

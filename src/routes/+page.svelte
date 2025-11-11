@@ -17,10 +17,12 @@
 		return txId.slice(0, 2) + '...' + txId.slice(-2);
 	}
 
-	function formatKgAmount(kgString: string | null) {
+	function formatKgAmount(roastingKg: string | null, processingKg: string | null) {
+		// Prefer processing quantity if available
+		const kgString = processingKg || roastingKg;
 		if (!kgString) return '-';
 
-		// Extract numeric value from string like "7.200,00 Kg" or "7200.00 Kg"
+		// Extract numeric value from string like "7.200,00 Kg" or "7200.00 Kg" or "94366.66"
 		// Remove "Kg" suffix and any spaces
 		const numericPart = kgString.replace(/\s*Kg\s*/gi, '').trim();
 
@@ -55,16 +57,24 @@
 		zone1Begin: string | null,
 		zone1End: string | null,
 		zone2Begin: string | null,
-		zone2End: string | null
+		zone2End: string | null,
+		processingBegin: string | null,
+		processingEnd: string | null
 	) {
 		const periods = [];
 
-		if (zone1Begin && zone1End) {
-			periods.push(`Z1: ${zone1Begin} - ${zone1End}`);
-		}
+		// Processing harvest period takes precedence if available
+		if (processingBegin && processingEnd) {
+			periods.push(`${processingBegin} - ${processingEnd}`);
+		} else {
+			// Otherwise show zone harvest periods
+			if (zone1Begin && zone1End) {
+				periods.push(`Z1: ${zone1Begin} - ${zone1End}`);
+			}
 
-		if (zone2Begin && zone2End) {
-			periods.push(`Z2: ${zone2Begin} - ${zone2End}`);
+			if (zone2Begin && zone2End) {
+				periods.push(`Z2: ${zone2Begin} - ${zone2End}`);
+			}
 		}
 
 		return periods.length > 0 ? periods.join(' | ') : '-';
@@ -141,7 +151,7 @@
 								Roast Type
 							</th>
 							<th
-								class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+								class="px-2 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase max-w-20"
 							>
 								Location
 							</th>
@@ -210,11 +220,11 @@
 									<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
 										{tx.typeOfRoast || '-'}
 									</td>
-									<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+									<td class="px-2 py-4 text-sm text-gray-900 max-w-20">
 										{tx.locationOfRoastingPlant || '-'}
 									</td>
 									<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-										{formatKgAmount(tx.kgCoffeeRoasted)}
+										{formatKgAmount(tx.kgCoffeeRoasted, tx.qtyGreenCoffee)}
 									</td>
 									<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
 										{tx.roastDate || '-'}
@@ -225,7 +235,9 @@
 												tx.zone1HarvestBegin,
 												tx.zone1HarvestEnd,
 												tx.zone2HarvestBegin,
-												tx.zone2HarvestEnd
+												tx.zone2HarvestEnd,
+												tx.processingHarvestBegin,
+												tx.processingHarvestEnd
 											)}
 										</div>
 									</td>

@@ -10,8 +10,8 @@
  */
 
 import { db } from '../src/lib/server/db/cli';
-import { algorandTransaction, roastingData } from '../src/lib/server/db/schema';
-import { parseRoastingData } from '../src/lib/server/algorand';
+import { algorandTransaction, roastingData, processingData } from '../src/lib/server/db/schema';
+import { parseRoastingData, parseProcessingData } from '../src/lib/server/algorand';
 import { eq } from 'drizzle-orm';
 
 async function main() {
@@ -105,6 +105,54 @@ async function main() {
 					});
 
 					console.log(`[INSERT] Created roasting data for tx ${tx.txId}`);
+				}
+
+				// Also try parsing as processing data
+				const processingParsed = parseProcessingData(tx.noteDecoded);
+				if (processingParsed) {
+					// Check if processing data already exists
+					const existingProcessing = await db
+						.select()
+						.from(processingData)
+						.where(eq(processingData.transactionId, tx.id))
+						.limit(1);
+
+					if (existingProcessing.length > 0) {
+						// Update existing record
+						await db
+							.update(processingData)
+							.set({
+								receptionIds: processingParsed.receptionIds,
+								postHullIds: processingParsed.postHullIds,
+								sizeOfBeans: processingParsed.sizeOfBeans,
+								qtyGreenCoffee: processingParsed.qtyGreenCoffee,
+								sortEntry: processingParsed.sortEntry,
+								sortExit: processingParsed.sortExit,
+								harvestBegin: processingParsed.harvestBegin,
+								harvestEnd: processingParsed.harvestEnd,
+								rawData: tx.noteDecoded
+							})
+							.where(eq(processingData.transactionId, tx.id));
+
+						console.log(`[UPDATE] Updated processing data for tx ${tx.txId}`);
+					} else {
+						// Insert new record
+						await db.insert(processingData).values({
+							transactionId: tx.id,
+							txId: tx.txId,
+							receptionIds: processingParsed.receptionIds,
+							postHullIds: processingParsed.postHullIds,
+							sizeOfBeans: processingParsed.sizeOfBeans,
+							qtyGreenCoffee: processingParsed.qtyGreenCoffee,
+							sortEntry: processingParsed.sortEntry,
+							sortExit: processingParsed.sortExit,
+							harvestBegin: processingParsed.harvestBegin,
+							harvestEnd: processingParsed.harvestEnd,
+							rawData: tx.noteDecoded
+						});
+
+						console.log(`[INSERT] Created processing data for tx ${tx.txId}`);
+					}
 				}
 
 				updatedCount++;

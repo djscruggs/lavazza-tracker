@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { algorandTransaction, roastingData } from '$lib/server/db/schema';
+import { algorandTransaction, roastingData, processingData } from '$lib/server/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
@@ -28,10 +28,17 @@ export const load: PageServerLoad = async () => {
 				zone1HarvestEnd: roastingData.zone1HarvestEnd,
 				zone2HarvestBegin: roastingData.zone2HarvestBegin,
 				zone2HarvestEnd: roastingData.zone2HarvestEnd,
-				childTx: roastingData.childTx
+				childTx: roastingData.childTx,
+				// Processing data fields
+				qtyGreenCoffee: processingData.qtyGreenCoffee,
+				sortEntry: processingData.sortEntry,
+				sortExit: processingData.sortExit,
+				processingHarvestBegin: processingData.harvestBegin,
+				processingHarvestEnd: processingData.harvestEnd
 			})
 			.from(algorandTransaction)
 			.leftJoin(roastingData, eq(algorandTransaction.id, roastingData.transactionId))
+			.leftJoin(processingData, eq(algorandTransaction.id, processingData.transactionId))
 			.orderBy(desc(algorandTransaction.timestamp));
 
 		return {

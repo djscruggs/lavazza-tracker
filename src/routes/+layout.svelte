@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/assets/favicon.png';
+	import github from '$lib/assets/github.png';
 
 	let { children } = $props();
 
@@ -44,7 +45,8 @@
 				<div class="flex items-center gap-4">
 					{#if syncMessage}
 						<div
-							class="text-sm px-3 py-1 rounded {syncMessage.includes('failed') || syncMessage.includes('Error')
+							class="rounded px-3 py-1 text-sm {syncMessage.includes('failed') ||
+							syncMessage.includes('Error')
 								? 'bg-red-100 text-red-800'
 								: 'bg-green-100 text-green-800'}"
 						>
@@ -54,7 +56,7 @@
 					<button
 						onclick={triggerSync}
 						disabled={syncing}
-						class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+						class="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{syncing ? 'Syncing...' : 'Sync Now'}
 					</button>
@@ -67,10 +69,13 @@
 		{@render children()}
 	</main>
 
-	<footer class="mt-12 py-6 border-t border-gray-200">
+	<footer class="mt-12 border-t border-gray-200 py-6">
 		<div class="container mx-auto px-4 text-center text-sm text-gray-600">
+			<p class="mb-2">
+				<strong>This site is in no way affiliated with Lavazza Coffee.</strong>
+			</p>
 			<p>
-				Tracking Lavazza coffee transactions on
+				It just displays their known transactions on
 				<a
 					href="https://explorer.perawallet.app/transactions/?transaction_list_address=IHUIX3OSTQO7DQ77SOQ66IR6WVQ5PAFGTBF4TBEC36IUSLGU7O3KD6TJ4E"
 					target="_blank"
@@ -78,6 +83,16 @@
 					class="text-blue-600 hover:text-blue-800">Algorand</a
 				>
 			</p>
+			<div class="mt-4">
+				<a
+					href="https://github.com/djscruggs/lavazza-tracker"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-block transition-opacity hover:opacity-70"
+				>
+					<img src={github} alt="GitHub" class="h-8 w-8" />
+				</a>
+			</div>
 		</div>
 	</footer>
 </div>

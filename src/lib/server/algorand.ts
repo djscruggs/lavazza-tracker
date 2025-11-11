@@ -95,6 +95,17 @@ export interface RoastingData {
 	childTx?: string;
 }
 
+export interface ProcessingData {
+	receptionIds?: string;
+	postHullIds?: string;
+	sizeOfBeans?: string;
+	qtyGreenCoffee?: string;
+	sortEntry?: string;
+	sortExit?: string;
+	harvestBegin?: string;
+	harvestEnd?: string;
+}
+
 /**
  * Parses roasting data from transaction note text
  * Handles multiple transaction types: ROASTING, PROCESSING, etc.
@@ -176,6 +187,58 @@ export function parseRoastingData(noteText: string): RoastingData | null {
 		return Object.keys(data).length > 0 ? data : null;
 	} catch (error) {
 		console.error('Error parsing roasting data:', error);
+		return null;
+	}
+}
+
+/**
+ * Parses processing data from transaction note text
+ * @param noteText - Decoded transaction note as UTF-8 string
+ */
+export function parseProcessingData(noteText: string): ProcessingData | null {
+	if (!noteText) return null;
+
+	try {
+		const data: ProcessingData = {};
+
+		// Extract Reception IDs (comma-separated list before "Post-hull IDs:")
+		const receptionMatch = noteText.match(/Reception IDs:\s*([^]*?)(?=Post-hull IDs:|$)/i);
+		if (receptionMatch) {
+			// Clean up the IDs - remove extra whitespace and keep the comma-separated list
+			const ids = receptionMatch[1].trim().replace(/\s+/g, ' ');
+			data.receptionIds = ids;
+		}
+
+		// Extract Post-hull IDs
+		const postHullMatch = noteText.match(/Post-hull IDs:\s*([^]*?)(?=Size of beans:|$)/i);
+		if (postHullMatch) {
+			const ids = postHullMatch[1].trim().replace(/\s+/g, ' ');
+			data.postHullIds = ids;
+		}
+
+		// Extract other fields
+		const sizeMatch = noteText.match(/Size of beans:\s*([^\n]+)/i);
+		if (sizeMatch) data.sizeOfBeans = sizeMatch[1].trim();
+
+		const qtyMatch = noteText.match(/Qty of green coffee selected by Lavazza \(kg\):\s*([\d,.]+)/i);
+		if (qtyMatch) data.qtyGreenCoffee = qtyMatch[1].trim();
+
+		const sortEntryMatch = noteText.match(/Sort entry:\s*(\d{2}\/\d{2}\/\d{4})/i);
+		if (sortEntryMatch) data.sortEntry = sortEntryMatch[1].trim();
+
+		const sortExitMatch = noteText.match(/Sort exit:\s*(\d{2}\/\d{2}\/\d{4})/i);
+		if (sortExitMatch) data.sortExit = sortExitMatch[1].trim();
+
+		const harvestBeginMatch = noteText.match(/Harvest begin:\s*(\d{2}\/\d{2}\/\d{4})/i);
+		if (harvestBeginMatch) data.harvestBegin = harvestBeginMatch[1].trim();
+
+		const harvestEndMatch = noteText.match(/Harvest end:\s*(\d{2}\/\d{2}\/\d{4})/i);
+		if (harvestEndMatch) data.harvestEnd = harvestEndMatch[1].trim();
+
+		// Only return data if we extracted at least some fields
+		return Object.keys(data).length > 0 ? data : null;
+	} catch (error) {
+		console.error('Error parsing processing data:', error);
 		return null;
 	}
 }
