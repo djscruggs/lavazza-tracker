@@ -11,7 +11,9 @@ const indexerClient = new algosdk.Indexer(INDEXER_TOKEN, INDEXER_SERVER, INDEXER
 // Lavazza Algorand addresses to track
 export const LAVAZZA_ADDRESSES = [
 	'IHUIX3OSTQO7DQ77SOQ66IR6WVQ5PAFGTBF4TBEC36IUSLGU7O3KD6TJ4E',
-	'2YPWHEG662PVPM75TILSWNN5VLIJMIIMTBD5ARJXS2JUJ2X6RPG23R4QSU'
+	'2YPWHEG662PVPM75TILSWNN5VLIJMIIMTBD5ARJXS2JUJ2X6RPG23R4QSU',
+	'3OFQJGMZ7XHAAVPRDY5TYWBC5EFAZTZNTIMXMSMJNNSKUY6STUZAKRFCRY',
+	'NRWVUGGRNCWZJLRW56NIS7ARXDNBMYRC2MXCD46THQEYSWOIC3PNANZBNY'
 ];
 
 // Keep for backwards compatibility
@@ -56,7 +58,7 @@ export async function getTransactionsForAddress(
 			round: tx['confirmed-round'] || tx.confirmedRound || 0,
 			timestamp: tx['round-time'] || tx.roundTime,
 			note: tx.note,
-			noteDecoded: tx.note ? decodeTransactionNote(tx.note) ?? undefined : undefined,
+			noteDecoded: tx.note ? (decodeTransactionNote(tx.note) ?? undefined) : undefined,
 			sender: tx.sender,
 			receiver: tx['payment-transaction']?.receiver || tx.paymentTransaction?.receiver,
 			amount: tx['payment-transaction']?.amount || tx.paymentTransaction?.amount,
@@ -144,7 +146,9 @@ export function parseRoastingData(noteText: string): RoastingData | null {
 
 		// Extract ZONE data dynamically (handles ZONE 1, 2, 3, 4, etc.)
 		// We'll store the first two zones we find in zone1 and zone2 fields
-		const zoneMatches = noteText.matchAll(/ZONE (\d+)([^]*?)(?=ZONE \d+|Child_TX|Process IDs:|Reception IDs:|$)/gi);
+		const zoneMatches = noteText.matchAll(
+			/ZONE (\d+)([^]*?)(?=ZONE \d+|Child_TX|Process IDs:|Reception IDs:|$)/gi
+		);
 		const zones = Array.from(zoneMatches);
 
 		// Helper function to extract zone data (handles multiple coffee species)
