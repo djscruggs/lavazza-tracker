@@ -115,6 +115,22 @@
 		<p class="text-gray-600">Tracking roasting activity on the Algorand blockchain</p>
 	</div>
 
+	<!-- Legend -->
+	<div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+		<h2 class="mb-2 text-sm font-semibold text-blue-900">Legend</h2>
+		<div class="flex items-center gap-2 text-sm text-blue-800">
+			<span
+				class="inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
+			>
+				Child
+			</span>
+			<span>
+				Indicates this transaction references a child transaction on the blockchain. Click the tag
+				to view the child transaction in the explorer.
+			</span>
+		</div>
+	</div>
+
 	{#if data.transactions.length === 0}
 		<div class="rounded-lg border border-yellow-200 bg-yellow-50 p-6 text-center">
 			<p class="mb-2 font-medium text-yellow-800">No transactions found</p>
@@ -205,12 +221,15 @@
 												{truncateTxId(tx.txId)}
 											</a>
 											{#if tx.childTx}
-												<span
-													class="inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
-													title="Has child transaction: {tx.childTx}"
+												<a
+													href="https://explorer.perawallet.app/tx/{tx.childTx}"
+													target="_blank"
+													rel="noopener noreferrer"
+													class="inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 hover:bg-green-200 cursor-pointer"
+													title="Click to view child transaction: {tx.childTx}"
 												>
 													Child
-												</span>
+												</a>
 											{/if}
 										</div>
 									</td>

@@ -18,7 +18,8 @@
 		"db:studio": "drizzle-kit studio",
 		"sync:historical": "tsx scripts/historical-sync.ts",
 		"reparse": "tsx scripts/reparse-transactions.ts",
-		"analyze:notes": "tsx scripts/analyze-notes.ts"
+		"analyze:notes": "tsx scripts/analyze-notes.ts",
+		"discover:wallets": "tsx scripts/discover-wallets.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",
