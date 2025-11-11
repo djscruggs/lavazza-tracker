@@ -10,9 +10,4 @@
 # - DATABASE_URL: Your Turso/libSQL database URL (e.g., libsql://your-db.turso.io)
 # - DATABASE_AUTH_TOKEN: Your Turso authentication token (if using Turso)
 
-# Redirect all traffic to HTTPS
-[[redirects]]
-  from = "http://*"
-  to = "https://:splat"
-  status = 301
-  force = true
+# Note: Redirects are configured in static/_redirects file (required by SvelteKit adapter-netlify)
