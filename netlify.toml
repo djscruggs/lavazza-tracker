@@ -1,6 +1,6 @@
 [build]
-  # Run database migrations before building
-  command = "npm run db:push && npm run build"
+  # Build the app (db:push will be run separately if DATABASE_URL is set)
+  command = "npm run build"
   publish = "build"
 
 [build.environment]
