@@ -17,7 +17,7 @@ export default defineConfig({
 	dialect: 'sqlite',
 	dbCredentials: {
 		url: databaseUrl,
-		authToken: databaseAuthToken
+		token: databaseAuthToken
 	},
 	verbose: true,
 	strict: true
