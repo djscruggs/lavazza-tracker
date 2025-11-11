@@ -154,7 +154,9 @@ async function saveTransaction(
 			amount: tx.amount,
 			fee: tx.fee,
 			txType: tx.txType,
-			rawJson: JSON.stringify(tx)
+			rawJson: JSON.stringify(tx, (_key, value) =>
+				typeof value === 'bigint' ? value.toString() : value
+			)
 		})
 		.onConflictDoNothing() // Skip if transaction already exists
 		.returning({ id: algorandTransaction.id });
