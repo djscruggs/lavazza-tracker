@@ -5,9 +5,10 @@ Track and report on Lavazza coffee activity via their transactions on the Algora
 ## Technology Stack
 
 - **Frontend**: SvelteKit
-- **Database**: SQLite with Drizzle ORM
+- **Database**: SQLite/libSQL with Drizzle ORM
 - **Blockchain**: Algorand (via AlgoNode free API)
-- **Runtime**: libSQL
+- **Hosting**: Netlify
+- **Production DB**: Turso (libSQL cloud database)
 
 ## Features
 
@@ -34,6 +35,10 @@ cp .env.example .env
 # Edit .env and add your DATABASE_URL
 # For local development, you can use:
 # DATABASE_URL=file:./local.db
+
+# For production with Turso:
+# DATABASE_URL=libsql://your-database.turso.io
+# DATABASE_AUTH_TOKEN=your-auth-token
 ```
 
 ### Database Setup
@@ -56,6 +61,13 @@ npm run db:studio
 npm run dev
 
 # Open http://localhost:5173
+```
+
+### Local Development with Netlify
+
+```bash
+# Run with Netlify dev for production-like environment
+netlify dev
 ```
 
 ## Algorand Sync
@@ -107,22 +119,7 @@ curl -X POST http://localhost:5173/api/sync/historical
 
 ### Setting Up Hourly Cron Job
 
-#### Option 1: Vercel Cron (Recommended for Vercel deployments)
-
-Create `vercel.json`:
-
-```json
-{
-  "crons": [
-    {
-      "path": "/api/sync",
-      "schedule": "0 * * * *"
-    }
-  ]
-}
-```
-
-#### Option 2: GitHub Actions
+#### Option 1: GitHub Actions (Recommended)
 
 Create `.github/workflows/sync.yml`:
 
@@ -143,7 +140,7 @@ jobs:
           curl -X POST ${{ secrets.APP_URL }}/api/sync
 ```
 
-#### Option 3: External Cron Service
+#### Option 2: External Cron Service
 
 Use services like:
 - [cron-job.org](https://cron-job.org)
@@ -152,7 +149,7 @@ Use services like:
 
 Configure them to make a POST request to `https://your-domain.com/api/sync` every hour.
 
-#### Option 4: Local Cron (for self-hosted)
+#### Option 3: Local Cron (for self-hosted)
 
 Add to your crontab:
 
@@ -245,6 +242,58 @@ curl -X POST https://your-domain.com/api/sync \
   -H "Authorization: Bearer your-secret-token"
 ```
 
+## Deployment
+
+### Netlify Deployment
+
+This project is configured for Netlify deployment with the following setup:
+
+1. **Create a Turso Database** (for production):
+   ```bash
+   # Install Turso CLI
+   curl -sSfL https://get.tur.so/install.sh | bash
+
+   # Create a database
+   turso db create lavazza-tracker
+
+   # Get the database URL
+   turso db show lavazza-tracker --url
+
+   # Create an auth token
+   turso db tokens create lavazza-tracker
+   ```
+
+2. **Push Database Schema to Turso**:
+   ```bash
+   DATABASE_URL="libsql://your-db.turso.io" DATABASE_AUTH_TOKEN="your-token" npm run db:push
+   ```
+
+3. **Configure Netlify Environment Variables**:
+   - Go to Netlify Dashboard → Site Settings → Environment Variables
+   - Add the following variables:
+     - `DATABASE_URL`: Your Turso database URL (e.g., `libsql://your-db.turso.io`)
+     - `DATABASE_AUTH_TOKEN`: Your Turso authentication token
+
+4. **Deploy**:
+   ```bash
+   # Connect your repository to Netlify via the dashboard, or use CLI:
+   netlify deploy --prod
+   ```
+
+### Important Files for Deployment
+
+- `netlify.toml`: Build configuration
+- `_redirects`: HTTP to HTTPS redirect rules (required by SvelteKit adapter)
+- `svelte.config.js`: Uses `@sveltejs/adapter-netlify`
+
+### Viewing Production Logs
+
+View function logs in the Netlify Dashboard:
+1. Go to your site dashboard
+2. Click **Functions** tab
+3. Click **sveltekit-render** function
+4. View logs to debug any issues
+
 ## Development Scripts
 
 ```bash
@@ -259,6 +308,17 @@ npm run db:generate      # Generate migrations
 npm run db:studio        # Open Drizzle Studio
 npm run sync:historical  # Fetch all historical transactions (one-time)
 ```
+
+## Troubleshooting
+
+### 500 Error in Production
+- Check Netlify function logs for detailed error messages
+- Verify `DATABASE_URL` and `DATABASE_AUTH_TOKEN` are set in Netlify environment variables
+- Ensure database schema has been pushed to production database with `npm run db:push`
+
+### Build Errors
+- If you see redirect errors, ensure `_redirects` file is in the project root
+- The project uses `@sveltejs/adapter-netlify` explicitly (not `adapter-auto`)
 
 ## License
 
