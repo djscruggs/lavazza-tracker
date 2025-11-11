@@ -72,8 +72,8 @@ netlify dev
 
 ## Algorand Sync
 
-The application automatically syncs transactions from the Algorand blockchain for the Lavazza address:
-`IHUIX3OSTQO7DQ77SOQ66IR6WVQ5PAFGTBF4TBEC36IUSLGU7O3KD6TJ4E`
+The application automatically syncs transactions from the Algorand blockchain for the Lavazza addresses found in 
+`/drizzle/src/lib/server/algorand.ts`
 
 ### Manual Sync
 
