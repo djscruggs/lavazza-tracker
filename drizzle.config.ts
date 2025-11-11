@@ -1,4 +1,8 @@
 import { defineConfig } from 'drizzle-kit';
+import * as dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 // Allow build to proceed without DATABASE_URL (it's only needed at runtime)
 const databaseUrl = process.env.DATABASE_URL || 'file:./local.db';
