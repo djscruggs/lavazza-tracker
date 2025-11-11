@@ -1,5 +1,6 @@
 node_modules
-
+.obsidian
+.claude
 # Output
 .output
 .vercel
