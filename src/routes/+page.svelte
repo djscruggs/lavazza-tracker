@@ -125,8 +125,8 @@
 				Child
 			</span>
 			<span>
-				Indicates this transaction references a child transaction on the blockchain. Hover over the
-				tag to see the child transaction ID.
+				Indicates this transaction references a child transaction on the blockchain. Click the tag
+				to view the child transaction in the explorer.
 			</span>
 		</div>
 	</div>
@@ -221,12 +221,15 @@
 												{truncateTxId(tx.txId)}
 											</a>
 											{#if tx.childTx}
-												<span
-													class="inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
-													title="Has child transaction: {tx.childTx}"
+												<a
+													href="https://explorer.perawallet.app/tx/{tx.childTx}"
+													target="_blank"
+													rel="noopener noreferrer"
+													class="inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 hover:bg-green-200 cursor-pointer"
+													title="Click to view child transaction: {tx.childTx}"
 												>
 													Child
-												</span>
+												</a>
 											{/if}
 										</div>
 									</td>
