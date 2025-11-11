@@ -1,8 +1,24 @@
-import { db } from '../src/lib/server/db';
+import { drizzle } from 'drizzle-orm/libsql';
+import { createClient } from '@libsql/client';
 import { algorandTransaction, roastingData } from '../src/lib/server/db/schema';
-import { getTransactionsForAddress } from '../src/lib/server/algorand';
 import algosdk from 'algosdk';
 import { sql } from 'drizzle-orm';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+// Create database connection for script
+if (!process.env.DATABASE_URL) {
+	throw new Error('DATABASE_URL is not set');
+}
+
+const client = createClient({
+	url: process.env.DATABASE_URL,
+	authToken: process.env.DATABASE_AUTH_TOKEN
+});
+
+const db = drizzle(client);
 
 // AlgoNode indexer for fetching child transactions
 const INDEXER_SERVER = 'https://mainnet-idx.algonode.cloud';
@@ -220,7 +236,13 @@ async function discoverWallets() {
 }
 
 // Run the discovery
-discoverWallets().catch((error) => {
-	console.error('Error during wallet discovery:', error);
-	process.exit(1);
-});
+discoverWallets()
+	.then(() => {
+		client.close();
+		process.exit(0);
+	})
+	.catch((error) => {
+		console.error('Error during wallet discovery:', error);
+		client.close();
+		process.exit(1);
+	});
