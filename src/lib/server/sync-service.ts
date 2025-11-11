@@ -145,8 +145,8 @@ async function saveTransaction(
 		.values({
 			txId: tx.id,
 			address: address,
-			round: tx.round,
-			timestamp: new Date(tx.timestamp * 1000), // Convert Unix timestamp to Date
+			round: tx.round || 0,
+			timestamp: tx.timestamp ? new Date(tx.timestamp * 1000) : new Date(),
 			noteRaw: tx.note,
 			noteDecoded: tx.noteDecoded,
 			sender: tx.sender,

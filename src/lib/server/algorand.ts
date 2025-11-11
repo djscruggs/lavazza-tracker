@@ -53,15 +53,15 @@ export async function getTransactionsForAddress(
 
 		return transactions.map((tx: any) => ({
 			id: tx.id,
-			round: tx['confirmed-round'],
-			timestamp: tx['round-time'],
+			round: tx['confirmed-round'] || tx.confirmedRound || 0,
+			timestamp: tx['round-time'] || tx.roundTime,
 			note: tx.note,
 			noteDecoded: tx.note ? decodeTransactionNote(tx.note) ?? undefined : undefined,
 			sender: tx.sender,
-			receiver: tx['payment-transaction']?.receiver,
-			amount: tx['payment-transaction']?.amount,
+			receiver: tx['payment-transaction']?.receiver || tx.paymentTransaction?.receiver,
+			amount: tx['payment-transaction']?.amount || tx.paymentTransaction?.amount,
 			fee: tx.fee,
-			txType: tx['tx-type']
+			txType: tx['tx-type'] || tx.txType
 		}));
 	} catch (error) {
 		console.error('Error fetching Algorand transactions:', error);
