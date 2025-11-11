@@ -7,7 +7,6 @@ const databaseAuthToken = process.env.DATABASE_AUTH_TOKEN;
 export default defineConfig({
 	schema: './src/lib/server/db/schema.ts',
 	dialect: 'sqlite',
-	driver: 'turso',
 	dbCredentials: {
 		url: databaseUrl,
 		authToken: databaseAuthToken
